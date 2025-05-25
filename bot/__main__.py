@@ -55,7 +55,7 @@ while True:
                         chat_id, "Добро пожаловать! Пожалуйста, введите первое число."
                     )
                     continue 
-                    # we skip the code below and move on to the next update from 'for update in updates' (if no updates -> the loop ends and waits for the next getUpdates request. If there are more updates -> it continues to process the next message from the queue.)
+                    # we skip the code below and move on to the next update from 'for update in updates' (if no updates -> the loop ends and waits for the next getUpdates request. If there are more updates it continues to process the next message from the queue.)
 
                 if chat_id not in users:
                     send_message(chat_id, "Пожалуйста, введите команду /start")
