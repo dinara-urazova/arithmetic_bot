@@ -50,11 +50,12 @@ while True:
                 chat_id = update["message"]["chat"]["id"]
 
                 if text == "/start":
-                    users[chat_id] = {"step": "ask_first"}
+                    users[chat_id] = {"step": "ask_first"} # which means the bot is waiting for the first num from the user with that chat_id
                     send_message(
                         chat_id, "Добро пожаловать! Пожалуйста, введите первое число."
                     )
-                    continue
+                    continue 
+                    # we skip the code below and move on to the next update from 'for update in updates' (if no updates -> the loop ends and waits for the next getUpdates request. If there are more updates -> it continues to process the next message from the queue.)
 
                 if chat_id not in users:
                     send_message(chat_id, "Пожалуйста, введите команду /start")
@@ -90,7 +91,7 @@ while True:
                             chat_id, "Пожалуйста, введите число в правильном формате."
                         )
 
-            finally:  # increment next_update_id in any way
+            finally:  # increment next_update_id in any way (even if the update message is invalid as we don't want to see them again)
                 next_update_id = update["update_id"] + 1
 
     except Exception as e:
