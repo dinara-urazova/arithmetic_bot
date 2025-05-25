@@ -18,7 +18,7 @@ def delete_webhook():  # сбоит без этой функции через к
 def send_message(chat_id, text):
     requests.post(
         f"https://api.telegram.org/bot{token}/sendMessage",
-        json={"chat_id": chat_id, "text": text},
+        params={"chat_id": chat_id, "text": text},
     )
 
 
@@ -42,44 +42,57 @@ while True:
         updates = data["result"]
 
         for update in updates:
-            if "message" not in update:
-                continue 
-            next_update_id = update["update_id"] + 1
-            if "text" not in update["message"]:
+            if "message" not in update or "text" not in update["message"]:
+                next_update_id = update["update_id"] + 1
                 continue
-            text = update["message"]["text"]
-            chat_id = update["message"]["chat"]["id"]
+            try:  # given the code before we ensure that the message exists and is of 'text' type
+                text = update["message"].get("text")
+                chat_id = update["message"]["chat"]["id"]
 
-            if text == "/start":
-                users[chat_id] = {"step": "ask_first"}
-                send_message(chat_id, "Добро пожаловать! Пожалуйста, введите первое число.")
-                continue
+                if text == "/start":
+                    users[chat_id] = {"step": "ask_first"}
+                    send_message(
+                        chat_id, "Добро пожаловать! Пожалуйста, введите первое число."
+                    )
+                    continue
 
-            if chat_id not in users:
-                send_message(chat_id, "Пожалуйста, введите команду /start")
-                continue
+                if chat_id not in users:
+                    send_message(chat_id, "Пожалуйста, введите команду /start")
+                    continue
 
-            state = users[chat_id]    
-            if state["step"] == "ask_first":
-                try:
-                    first_number = float(text)
-                    state["first_num"] = first_number
-                    state["step"] = "ask_second"
-                    send_message(chat_id, "Принял, спасибо! Можете вводить второе число.")
-        
-                except ValueError:
-                    send_message(chat_id, "Пожалуйста, введите число в правильном формате.")
+                state = users[chat_id]
+                if state["step"] == "ask_first":
+                    try:
+                        first_number = float(text)
+                        state["first_num"] = first_number
+                        state["step"] = "ask_second"
+                        send_message(
+                            chat_id, "Принял, спасибо! Можете вводить второе число."
+                        )
+                    except ValueError:
+                        send_message(
+                            chat_id, "Пожалуйста, введите число в правильном формате."
+                        )
 
-            elif state["step"] == "ask_second":
-                try:
-                    second_number = float(text)
-                    total_sum = state["first_num"] + second_number
-                    send_message(chat_id, f"Спасибо, принял! Сумма двух чисел - {total_sum}")
-                    # users = {12345: {'step': 'ask_second', 'first_num': 3.0}} - так выглядит словарь users после запроса 2 числа
-                    del users[chat_id]  # удаляем данные о пользователе, чтобы мб заново ввести числа, словарь пустой -> users = {}
-                except ValueError:
-                    send_message(chat_id, "Пожалуйста, введите число в правильном формате.")
-                    
+                elif state["step"] == "ask_second":
+                    try:
+                        second_number = float(text)
+                        total_sum = state["first_num"] + second_number
+                        send_message(
+                            chat_id, f"Спасибо, принял! Сумма двух чисел - {total_sum}"
+                        )
+                        # users = {12345: {'step': 'ask_second', 'first_num': 3.0}} - так выглядит словарь users после запроса 2 числа
+                        del users[
+                            chat_id
+                        ]  # удаляем данные о пользователе, чтобы мб заново ввести числа, словарь пустой -> users = {}
+                    except ValueError:
+                        send_message(
+                            chat_id, "Пожалуйста, введите число в правильном формате."
+                        )
+
+            finally:  # increment next_update_id in any way
+                next_update_id = update["update_id"] + 1
+
     except Exception as e:
         print(f"The error is {e}")
 
