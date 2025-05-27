@@ -5,16 +5,6 @@ import time
 token = env_config.tg_token.get_secret_value()
 
 
-def delete_webhook():  # сбоит без этой функции через какое-то время
-    API = f"https://api.telegram.org/bot{token}"
-    resp = requests.get(f"{API}/deleteWebhook")
-    data = resp.json()
-    if data.get("ok"):
-        print("Webhook deleted successfully.")
-    else:
-        print("Failed to delete webhook:", data)
-
-
 def send_message(chat_id, text):
     requests.post(
         f"https://api.telegram.org/bot{token}/sendMessage",
@@ -22,10 +12,8 @@ def send_message(chat_id, text):
     )
 
 
-delete_webhook()
-
 next_update_id = 0
-users = {}
+user_state = {}
 
 while True:
     try:  # ask Telegram for new updates
@@ -33,11 +21,10 @@ while True:
             f"https://api.telegram.org/bot{token}/getUpdates",
             params={
                 "offset": next_update_id,
-                "timeout": 10,
-            },  # Telegram waits up to 10 sec to return updates (server side wait)
+            },
         )
 
-        data = response.json()  # process received updates
+        data = response.json()
         print(data)
         updates = data["result"]
 
@@ -50,18 +37,20 @@ while True:
                 chat_id = update["message"]["chat"]["id"]
 
                 if text == "/start":
-                    users[chat_id] = {"step": "ask_first"} # which means the bot is waiting for the first num from the user with that chat_id
+                    user_state[chat_id] = {
+                        "step": "ask_first"
+                    }  # which means the bot is waiting for the first num from the user with that chat_id
                     send_message(
                         chat_id, "Добро пожаловать! Пожалуйста, введите первое число."
                     )
-                    continue 
+                    continue
                     # we skip the code below and move on to the next update from 'for update in updates' (if no updates -> the loop ends and waits for the next getUpdates request. If there are more updates it continues to process the next message from the queue.)
 
-                if chat_id not in users:
+                if chat_id not in user_state:
                     send_message(chat_id, "Пожалуйста, введите команду /start")
                     continue
 
-                state = users[chat_id]
+                state = user_state[chat_id]
                 if state["step"] == "ask_first":
                     try:
                         first_number = float(text)
@@ -83,7 +72,7 @@ while True:
                             chat_id, f"Спасибо, принял! Сумма двух чисел - {total_sum}"
                         )
                         # users = {12345: {'step': 'ask_second', 'first_num': 3.0}} - так выглядит словарь users после запроса 2 числа
-                        del users[
+                        del user_state[
                             chat_id
                         ]  # удаляем данные о пользователе, чтобы мб заново ввести числа, словарь пустой -> users = {}
                     except ValueError:
