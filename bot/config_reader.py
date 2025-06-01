@@ -4,7 +4,7 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
 
-    tg_token: SecretStr
+    telegram_token: SecretStr
 
     model_config = SettingsConfigDict(env_file=".env")
 

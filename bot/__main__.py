@@ -2,7 +2,7 @@ import requests
 from bot.config_reader import env_config
 import time
 
-token = env_config.tg_token.get_secret_value()
+token = env_config.telegram_token.get_secret_value()
 
 
 def send_message(chat_id, text):
