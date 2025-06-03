@@ -4,18 +4,17 @@ from bot.config_reader import env_config
 import time
 
 token = env_config.telegram_token.get_secret_value()
-OPERATION_SUM = "operation_sum"
-OPERATION_SUBSTRACT = "operation_substract"
+OPERATION_ADD = "operation_add"
+OPERATION_SUBTRACT = "operation_subtract"
 OPERATION_MULTIPLY = "operation_multiply"
 OPERATION_DIVIDE = "operation_divide"
 
-OPERATION_SQUARE = "operation_square"
-OPERATION_SQUARE_ROOT = "operation_square_root"
+OPERATION_FIND_SQUARE = "operation_find_square"
+OPERATION_FIND_ROOT = "operation_find_root"
 
 STEP_NEED_FIRST_NUM = "step_need_first_num"
 STEP_NEED_OPERATION = "step_need_operation"
 STEP_NEED_SECOND_NUM = "step_need_second_num"
-STEP_COMPLETED = "step_completed"
 
 
 def keyboard_builder(buttons=[]) -> str:
@@ -34,16 +33,16 @@ def keyboard_builder(buttons=[]) -> str:
 
 
 def apply_unary_operation(a, operation):
-    if operation == OPERATION_SQUARE:
+    if operation == OPERATION_FIND_SQUARE:
         return a**2
-    if operation == OPERATION_SQUARE_ROOT:
+    if operation == OPERATION_FIND_ROOT:
         return a**0.5
 
 
 def apply_binary_operation(a, b, operation):
-    if operation == OPERATION_SUM:
+    if operation == OPERATION_ADD:
         return a + b
-    if operation == OPERATION_SUBSTRACT:
+    if operation == OPERATION_SUBTRACT:
         return a - b
     if operation == OPERATION_MULTIPLY:
         return a * b
@@ -89,12 +88,12 @@ def process_update_message(message: dict):
                 chat_id,
                 "Принял, спасибо! Выберите операцию.",
                 [
-                    ("+", OPERATION_SUM),
-                    ("-", OPERATION_SUBSTRACT),
+                    ("+", OPERATION_ADD),
+                    ("-", OPERATION_SUBTRACT),
                     ("*", OPERATION_MULTIPLY),
                     ("/", OPERATION_DIVIDE),
-                    ("x²", OPERATION_SQUARE),
-                    ("√", OPERATION_SQUARE_ROOT),
+                    ("x²", OPERATION_FIND_SQUARE),
+                    ("√x", OPERATION_FIND_ROOT),
                 ],
             )
         except ValueError:
@@ -125,8 +124,8 @@ def process_update_callback(callback_query):
         chat_id = callback_query["message"]["chat"]["id"]
         state = user_state[chat_id]
         state["operation"] = callback_query["data"]
-        if state["operation"] in (OPERATION_SQUARE_ROOT, OPERATION_SQUARE):
-            if state["operation"] == OPERATION_SQUARE_ROOT and state["first_num"] < 0:
+        if state["operation"] in (OPERATION_FIND_ROOT, OPERATION_FIND_SQUARE):
+            if state["operation"] == OPERATION_FIND_ROOT and state["first_num"] < 0:
                 send_message(
                     chat_id,
                     "Нельзя извлекать корень из отрицательных чисел. Пожалуйста, введите другое число ",
