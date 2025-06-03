@@ -78,7 +78,9 @@ def process_update_message(message: dict):
         send_message(chat_id, "Пожалуйста, введите команду /start")
         return
 
-    state = user_state[chat_id]
+    state = user_state[
+        chat_id
+    ]  # cловарь (value) при chat_id (key), содержащий user_data
     if state["step"] == STEP_NEED_FIRST_NUM:
         try:
             first_number = float(text)
@@ -130,7 +132,9 @@ def process_update_callback(callback_query):
                     chat_id,
                     "Нельзя извлекать корень из отрицательных чисел. Пожалуйста, введите другое число ",
                 )
-                state["step"] = STEP_NEED_FIRST_NUM
+                state["step"] = (
+                    STEP_NEED_FIRST_NUM  # сбрасываем на 1 шаг, можно сразу ввести первое число, минуя /start
+                )
                 return
 
             result = apply_unary_operation(state["first_num"], state["operation"])
