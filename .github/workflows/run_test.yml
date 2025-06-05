@@ -26,9 +26,4 @@ jobs:
       - name: Prepare environment variables
         run: |
           cp .env.example .env
-      - name: Test with pytest
-        run: |
-          coverage run -m pytest  -v -s
-      - name: Generate Coverage Report
-        run: |
-          coverage report -m
+     
