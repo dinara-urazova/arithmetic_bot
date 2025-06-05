@@ -149,12 +149,12 @@ def process_update_callback(callback_query):
                 state["step"] = (
                     STEP_NEED_FIRST_NUM  # сбрасываем на 1 шаг, можно сразу ввести первое число, минуя /start
                 )
-                return 
+                return None
 
             result = apply_unary_operation(state["first_num"], state["operation"])
             send_message(chat_id, f"Спасибо, принял! Результат операции - {result}")
             del user_state[chat_id]
-            return
+            return None
 
         else:
             state["step"] = STEP_NEED_SECOND_NUM
